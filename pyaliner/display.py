@@ -2,16 +2,15 @@
 Functions to display visually rich comparisons between sequential data
 """
 import os
-from itertools import zip_longest
 from shutil import get_terminal_size
 from typing import Tuple, Iterable, Sequence
 
+from itertools import zip_longest
 from pypey import pype
 from rich.console import Console
 
-from pyaliner.align import align, COMPACT, JOIN, GAP, Seq
+from pyaliner.align import align, COMPACT, JOIN, GAP, SKIP, Seq
 
-FILL = '∷'
 ELLIPSIS = '[orange3]...[/orange3]'
 WHITE = 'grey93'
 BOLD_BLUE = 'b #0EADF1'
@@ -57,7 +56,7 @@ def rich_paired_in_true_pred(alignments: Iterable[Tuple[Seq, Seq, Seq]]) -> Iter
     screen_width, _ = get_terminal_size()
 
     return (pype(alignments)
-            .map(lambda in_seq, true, pred: _single_in_true_pred_paired(in_seq, true, pred, screen_width))
+            .map(lambda in_seq, true, pred: seq_in_true_pred_paired(in_seq, true, pred, screen_width))
             .map(''.join))
 
 
@@ -71,7 +70,7 @@ def rich_paired_true_pred(alignments: Iterable[Tuple[Seq, Seq]]) -> Iterable[str
     """
     screen_width, _ = get_terminal_size()
 
-    return pype(alignments).map(lambda true, pred: _single_true_pred_paired(true, pred, screen_width)).map(''.join)
+    return pype(alignments).map(lambda true, pred: seq_true_pred_paired(true, pred, screen_width)).map(''.join)
 
 
 def rich_inlined_true_pred(alignments: Iterable[Tuple[Seq, Seq]]) -> Iterable[str]:
@@ -106,12 +105,35 @@ def rich_inlined_true_pred(alignments: Iterable[Tuple[Seq, Seq]]) -> Iterable[st
         yield f' {" ".join(ui)}\n'.replace(JOIN, _in_white(JOIN))
 
 
-def _single_in_true_pred_paired(in_seq: Sequence[str], true: Sequence[str], pred: Sequence[str], screen_width: int):
+def rich_paired_true_pred1_pred2(alignments: Iterable[Tuple[Seq, Seq, Seq]]) -> Iterable[str]:
+    """
+    Creates rich visual comparison strings for a collection of triples of input, true and predicted sequences, aligned
+    against each other
+
+    :param alignments: Triples of tuples of strings representing inputs, ground-truths and predictions
+    :return: a collection of rich strings for terminal display
+    """
+    screen_width, _ = get_terminal_size()
+
+    return (pype(alignments)
+            .map(lambda in_seq, true, pred: seq_true_pred1_pred2(in_seq, true, pred, screen_width))
+            .map(''.join))
+
+
+def seq_in_true_pred_paired(in_seq: Sequence[str], true: Sequence[str], pred: Sequence[str], screen_width: int):
+    """
+
+    :param in_seq:
+    :param true:
+    :param pred:
+    :param screen_width:
+    :return:
+    """
     in_ui, true_ui, pred_ui = [], [], []
 
     length = 0
 
-    for in_token, true_token, pred_token in zip_longest(in_seq, true, pred, fillvalue=FILL):
+    for in_token, true_token, pred_token in zip_longest(in_seq, true, pred, fillvalue=SKIP):
 
         true_token, pred_token = _realign_true_pred(true_token, pred_token)
 
@@ -144,7 +166,14 @@ def _single_in_true_pred_paired(in_seq: Sequence[str], true: Sequence[str], pred
     yield f" {' '.join(in_ui)}\n {' '.join(true_ui)}\n {' '.join(pred_ui)}\n".replace(JOIN, _in_grey(JOIN))
 
 
-def _single_true_pred_paired(true: Sequence[str], pred: Sequence[str], screen_width: int) -> Iterable[str]:
+def seq_true_pred_paired(true: Sequence[str], pred: Sequence[str], screen_width: int) -> Iterable[str]:
+    """
+
+    :param true:
+    :param pred:
+    :param screen_width:
+    :return:
+    """
     true_ui, pred_ui = [], []
 
     length = 0
@@ -173,6 +202,50 @@ def _single_true_pred_paired(true: Sequence[str], pred: Sequence[str], screen_wi
         length += pad + SPACE_N
 
     yield f" {' '.join(true_ui)}\n {' '.join(pred_ui)}\n".replace(JOIN, _in_grey(JOIN))
+
+
+def seq_true_pred1_pred2(true: Sequence[str], pred1: Sequence[str], pred2: Sequence[str], screen_width: int):
+    """
+
+    :param true:
+    :param pred1:
+    :param pred2:
+    :param screen_width:
+    :return:
+    """
+    true_ui, pred1_ui, pred2_ui = [], [], []
+
+    length = 0
+
+    for true_token, pred1_token, pred2_token in zip_longest(true, pred1, pred2, fillvalue=SKIP):
+
+        pad = max(len(true_token), len(JOIN.join(pred1_token)), len(JOIN.join(pred2_token)))
+
+        if (length + pad + SPACE_N + ELLIPSIS_N + SPACE_N + MARGIN_N) >= screen_width:
+            true_ui.append(f'{ELLIPSIS}')
+            pred1_ui.append(f'{ELLIPSIS}')
+            pred2_ui.append(f'{ELLIPSIS}')
+
+            yield f" {' '.join(true_ui)}\n {' '.join(pred1_ui)}\n {' '.join(pred2_ui)}\n\n".replace(JOIN,
+                                                                                                    _in_grey(JOIN))
+
+            true_ui = [ELLIPSIS]
+            pred1_ui = [ELLIPSIS]
+            pred2_ui = [ELLIPSIS]
+
+            length = ELLIPSIS_N + SPACE_N
+
+        true_colour_fn = _in_white if true_token == pred1_token and true_token == pred2_token else _in_blue
+        pred1_colour_fn = _in_white if true_token == pred1_token else _in_grey if pred1_token == SKIP else _in_red
+        pred2_colour_fn = _in_white if true_token == pred2_token else _in_grey if pred2_token == SKIP else _in_red
+
+        true_ui.append(true_colour_fn(f'{true_token:^{pad}}'))
+        pred1_ui.append(pred1_colour_fn(f'{pred1_token:^{pad}}'))
+        pred2_ui.append(pred2_colour_fn(f'{pred2_token:^{pad}}'))
+
+        length += pad + SPACE_N
+
+    yield f" {' '.join(true_ui)}\n {' '.join(pred1_ui)}\n {' '.join(pred2_ui)}\n".replace(JOIN, _in_grey(JOIN))
 
 
 def _realign_true_pred(true: str, pred: str) -> Tuple[Seq, Seq]:

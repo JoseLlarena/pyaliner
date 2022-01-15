@@ -2,35 +2,39 @@
 
 Library for aligning and visually comparing sequential data in the terminal.
 
-## paired 2-way ground-truth vs other comparison
+## paired ground-truth vs predicted comparison
 
 ### compact
 
-![Compact paired target vs output](/images/paired-2way.png)
+![Compact paired ground-truth vs predicted](/images/paired-2way.png)
 
 ### classic
 
-![Classic paired target vs output](/images/classic-paired-2way.png)
+![Classic paired ground-truth vs predicted](/images/classic-paired-2way.png)
 
-## inlined ground-truth vs other 2-way comparison 
+## inlined ground-truth vs predicted comparison 
 
 ### compact
 
-![Compact inlined target vs output](/images/inlined-2way.png)
+![Compact inlined ground-truth vs predicted](/images/inlined-2way.png)
 
 ### classic
 
-![Classic inlined target vs output](/images/classic-inlined-2way.png)
+![Classic inlined ground-truth vs predicted](/images/classic-inlined-2way.png)
 
-## paired 3-way ground-truth vs other comparison
+## paired input vs ground-truth vs predicted comparison
 
 ### compact
 
-![Compact paired input vs target vs output](/images/paired-3way.png)
+![Compact paired input vs ground-truth vs predicted](/images/paired-3way.png)
 
 ### classic
 
-![Classic paired input vs target vs output](/images/classic-paired-3way.png)
+![Classic paired input vs ground-truth vs predicted](/images/classic-paired-3way.png)
+
+## paired ground-truth vs 1st predicted vs 2nd predicted comparison
+
+![Classic paired ground-truth vs 1st predicted vs 2nd predicted](/images/classic-paired-tpp.png)
 
 ## alignment
 
