@@ -1,12 +1,16 @@
 # Changelog
 
-## [0.1.0](https://github.com/josellarena/pyaliner/tree/0.1.0) (2022-01-16)
+## [0.1.1](https://github.com/josellarena/pyaliner/tree/0.1.1) (2022-01-16)
 
-[Full Changelog](https://github.com/josellarena/pyaliner/compare/0.0.1...0.1.0)
+[Full Changelog](https://github.com/josellarena/pyaliner/compare/0.1.0...0.1.1)
 
 **Merged pull requests:**
 
-- Tpp [\#1](https://github.com/JoseLlarena/pyaliner/pull/1) ([JoseLlarena](https://github.com/JoseLlarena))
+- add missing image for readme [\#2](https://github.com/JoseLlarena/pyaliner/pull/2) ([JoseLlarena](https://github.com/JoseLlarena))
+
+## [0.1.0](https://github.com/josellarena/pyaliner/tree/0.1.0) (2022-01-16)
+
+[Full Changelog](https://github.com/josellarena/pyaliner/compare/0.0.1...0.1.0)
 
 ## [0.0.1](https://github.com/josellarena/pyaliner/tree/0.0.1) (2022-01-09)
 
