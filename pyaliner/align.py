@@ -17,6 +17,7 @@ NGRAM = 'ngram'
 
 GAP = '⎵'
 JOIN = '∙'
+SKIP = '∷'
 
 LEV = lambda left, right: float(left != right)
 
@@ -165,6 +166,71 @@ def compact(left_ali: Sequence[str], right_ali: Sequence[str]) -> Tuple[Seq, Seq
                 new_right_ali.append(right_token)
 
     return tuple(new_left_ali), tuple(new_right_ali)
+
+
+def itp_align(in_seq: Sequence[str], true: Sequence[str], pred: Sequence[str], align_fn: Fn) -> Tuple[Seq, Seq, Seq]:
+    # TODO THIS IS A SLOW HEURISTIC METHOD, NEEDS REPLACING WITH MORE PERFORMANT BETTER THOUGHT-THROUGH ALGORITHM
+
+    true_ali, pred_ali = align_fn(true, pred)
+
+    input_ali, true_ali = align_fn(in_seq, true_ali)
+    input_ali, pred_ali = align_fn(input_ali, pred_ali)
+
+    if len(input_ali) != len(true_ali) or len(true_ali) != len(pred_ali):
+        true_ali, pred_ali = align_fn(true_ali, pred_ali)
+
+        input_ali, true_ali = align_fn(input_ali, true_ali)
+        input_ali, pred_ali = align_fn(input_ali, pred_ali)
+
+    if len(input_ali) != len(true_ali) or len(true_ali) != len(pred_ali):
+        true_ali, pred_ali = align_fn(true_ali, pred_ali)
+
+        input_ali, true_ali = align_fn(input_ali, true_ali)
+        input_ali, pred_ali = align_fn(input_ali, pred_ali)
+
+    return (pype([input_ali, true_ali, pred_ali])
+            .zip(trunc=False, pad=SKIP)
+            .reject(lambda _in, true, pred: _in == GAP and true == GAP and pred == GAP)
+            .map(lambda _in, true, pred: (_in.strip(GAP + JOIN) if len(_in) > 2 else _in, true, pred))
+            .unzip()
+            .map(tuple)
+            .to(tuple))
+
+
+def tp1p2_align(true: Sequence[str], pred1: Sequence[str], pred2: Sequence[str]) -> Tuple[Seq, Seq, Seq]:
+    true1_ali, pred1_ali = (deque(seq) for seq in align(true, pred1))
+
+    true2_ali, pred2_ali = (deque(seq) for seq in align(true, pred2))
+
+    combo_true_ali, combo_pred1_ali, combo_pred2_ali = [], [], []
+
+    while true1_ali or true2_ali:
+        true1 = true1_ali.popleft() if true1_ali else None
+        pred1 = pred1_ali.popleft() if pred1_ali else None
+        true2 = true2_ali.popleft() if true2_ali else None
+        pred2 = pred2_ali.popleft() if pred2_ali else None
+
+        if true1 == GAP and true2 != GAP:
+            combo_true_ali.append(true1)
+            combo_pred1_ali.append(pred1)
+            combo_pred2_ali.append(SKIP)
+            true2_ali.appendleft(true2)
+            pred2_ali.appendleft(pred2)
+
+        elif true1 != GAP and true2 == GAP:
+            combo_true_ali.append(true2)
+            combo_pred1_ali.append(SKIP)
+            combo_pred2_ali.append(pred2)
+            true1_ali.appendleft(true1)
+            pred1_ali.appendleft(pred1)
+
+        else:
+            combo_true_ali.append(true1)
+            combo_pred1_ali.append(pred1)
+            combo_pred2_ali.append(pred2)
+
+
+    return pype([combo_true_ali, combo_pred1_ali, combo_pred2_ali]).map(tuple).to(tuple)
 
 
 def _fast_align(left: Sequence[str], right: Sequence[str]) -> Tuple[Seq, Seq]:

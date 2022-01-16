@@ -2,7 +2,7 @@ from pathlib import Path
 from setuptools import setup
 
 setup(name='pyaliner',
-      version='0.0.1',
+      version='0.1.0',
       description='A library for comparing sequential data',
       long_description=(Path(__file__).parent.resolve() / 'README.md').read_text(encoding='utf8'),
       long_description_content_type='text/markdown',
