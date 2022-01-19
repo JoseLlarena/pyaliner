@@ -169,6 +169,15 @@ def compact(left_ali: Sequence[str], right_ali: Sequence[str]) -> Tuple[Seq, Seq
 
 
 def itp_align(in_seq: Sequence[str], true: Sequence[str], pred: Sequence[str], align_fn: Fn) -> Tuple[Seq, Seq, Seq]:
+    """
+    Aligns input, true and predicted sequences
+
+    :param in_seq: input sequence
+    :param true: true sequence
+    :param pred: predicted sequence
+    :param align_fn: alignment function
+    :return: a triplet with the passed-in sequences aligned
+    """
     # TODO THIS IS A SLOW HEURISTIC METHOD, NEEDS REPLACING WITH MORE PERFORMANT BETTER THOUGHT-THROUGH ALGORITHM
 
     true_ali, pred_ali = align_fn(true, pred)
@@ -198,10 +207,37 @@ def itp_align(in_seq: Sequence[str], true: Sequence[str], pred: Sequence[str], a
 
 
 def tp1p2_align(true: Sequence[str], pred1: Sequence[str], pred2: Sequence[str]) -> Tuple[Seq, Seq, Seq]:
+    """
+    Aligns true, 1st and 2nd predicted sequences
+
+    :param true: true sequence
+    :param pred1: input sequence
+    :param pred2: predicted sequence
+    :return: a triplet with the passed-in sequences aligned
+    """
     true1_ali, pred1_ali = (deque(seq) for seq in align(true, pred1))
 
     true2_ali, pred2_ali = (deque(seq) for seq in align(true, pred2))
 
+    return three_way_realign(true1_ali, pred1_ali, true2_ali, pred2_ali)
+
+
+def three_way_realign(true1_ali: Sequence[str],
+                      pred1_ali: Sequence[str],
+                      true2_ali: Sequence[str],
+                      pred2_ali: Sequence[str]) -> Tuple[Seq, Seq, Seq]:
+    """
+
+    Combines the 4 aligned sequences into a single true sequence and adjusted 1st and 2nd predicted sequences. This
+    function assumes that the only difference between 1st and 2nd true alignments is in the number and placement of
+    gaps.
+
+    :param true1_ali: first true alignment
+    :param pred1_ali: first predicted alignment
+    :param true2_ali: second true alignment
+    :param pred2_ali: second predicted algnment
+    :return: a triplet with the combined alignments of the passed-in sequences
+    """
     combo_true_ali, combo_pred1_ali, combo_pred2_ali = [], [], []
 
     while true1_ali or true2_ali:
@@ -228,7 +264,6 @@ def tp1p2_align(true: Sequence[str], pred1: Sequence[str], pred2: Sequence[str])
             combo_true_ali.append(true1)
             combo_pred1_ali.append(pred1)
             combo_pred2_ali.append(pred2)
-
 
     return pype([combo_true_ali, combo_pred1_ali, combo_pred2_ali]).map(tuple).to(tuple)
 

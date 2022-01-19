@@ -120,14 +120,17 @@ def rich_paired_true_pred1_pred2(alignments: Iterable[Tuple[Seq, Seq, Seq]]) -> 
             .map(''.join))
 
 
-def seq_in_true_pred_paired(in_seq: Sequence[str], true: Sequence[str], pred: Sequence[str], screen_width: int):
+def seq_in_true_pred_paired(in_seq: Sequence[str], true: Sequence[str], pred: Sequence[str], screen_width: int)\
+        -> Iterable[str]:
     """
+    Creates rich visual comparison strings for at triplet of input, true and predicted sequences, one for each chunk
+    that fits the screen width
 
-    :param in_seq:
-    :param true:
-    :param pred:
-    :param screen_width:
-    :return:
+    :param in_seq: input sequence
+    :param true: true sequence
+    :param pred: predicted sequence
+    :param screen_width: max terminal screen width
+    :return: an `Iterable` of  rich strings
     """
     in_ui, true_ui, pred_ui = [], [], []
 
@@ -168,11 +171,13 @@ def seq_in_true_pred_paired(in_seq: Sequence[str], true: Sequence[str], pred: Se
 
 def seq_true_pred_paired(true: Sequence[str], pred: Sequence[str], screen_width: int) -> Iterable[str]:
     """
+    Creates rich visual comparison strings for a pair of true and predicted sequences, one for each chunk that fits
+    the screen width
 
-    :param true:
-    :param pred:
-    :param screen_width:
-    :return:
+    :param true: true sequence
+    :param pred: predicted sequence
+    :param screen_width: max terminal screen width
+    :return: an `Iterable` of  rich strings
     """
     true_ui, pred_ui = [], []
 
@@ -204,14 +209,17 @@ def seq_true_pred_paired(true: Sequence[str], pred: Sequence[str], screen_width:
     yield f" {' '.join(true_ui)}\n {' '.join(pred_ui)}\n".replace(JOIN, _in_grey(JOIN))
 
 
-def seq_true_pred1_pred2(true: Sequence[str], pred1: Sequence[str], pred2: Sequence[str], screen_width: int):
+def seq_true_pred1_pred2(true: Sequence[str], pred1: Sequence[str], pred2: Sequence[str], screen_width: int)\
+        -> Iterable[str]:
     """
+    Creates rich visual comparison strings for at triplet of true, 1st and 2nd predicted sequences, one for each chunk
+    that fits the screen width
 
-    :param true:
-    :param pred1:
-    :param pred2:
-    :param screen_width:
-    :return:
+    :param true: true sequence
+    :param pred1: first predicted sequence
+    :param pred2: second predicted sequence
+    :param screen_width: max terminal screen width
+    :return: an `Iterable` of  rich strings
     """
     true_ui, pred1_ui, pred2_ui = [], [], []
 
@@ -219,15 +227,14 @@ def seq_true_pred1_pred2(true: Sequence[str], pred1: Sequence[str], pred2: Seque
 
     for true_token, pred1_token, pred2_token in zip_longest(true, pred1, pred2, fillvalue=SKIP):
 
-        pad = max(len(true_token), len(JOIN.join(pred1_token)), len(JOIN.join(pred2_token)))
+        pad = max(len(true_token), len(pred1_token), len(pred2_token))
 
         if (length + pad + SPACE_N + ELLIPSIS_N + SPACE_N + MARGIN_N) >= screen_width:
             true_ui.append(f'{ELLIPSIS}')
             pred1_ui.append(f'{ELLIPSIS}')
             pred2_ui.append(f'{ELLIPSIS}')
 
-            yield f" {' '.join(true_ui)}\n {' '.join(pred1_ui)}\n {' '.join(pred2_ui)}\n\n".replace(JOIN,
-                                                                                                    _in_grey(JOIN))
+            yield f" {' '.join(true_ui)}\n {' '.join(pred1_ui)}\n {' '.join(pred2_ui)}\n\n"
 
             true_ui = [ELLIPSIS]
             pred1_ui = [ELLIPSIS]
@@ -245,7 +252,7 @@ def seq_true_pred1_pred2(true: Sequence[str], pred1: Sequence[str], pred2: Seque
 
         length += pad + SPACE_N
 
-    yield f" {' '.join(true_ui)}\n {' '.join(pred1_ui)}\n {' '.join(pred2_ui)}\n".replace(JOIN, _in_grey(JOIN))
+    yield f" {' '.join(true_ui)}\n {' '.join(pred1_ui)}\n {' '.join(pred2_ui)}\n"
 
 
 def _realign_true_pred(true: str, pred: str) -> Tuple[Seq, Seq]:
